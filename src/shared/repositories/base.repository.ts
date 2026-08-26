@@ -93,7 +93,7 @@ export abstract class BaseRepository<T extends Document> implements IBaseReposit
     update: UpdateQuery<T>,
     options?: QueryOptions<T>
   ): Promise<boolean> {
-    const result = await this.model.updateOne(filter, update, options).exec();
+    const result = await this.model.updateOne(filter, update, options as any).exec();
     return result.modifiedCount > 0;
   }
 
@@ -102,7 +102,7 @@ export abstract class BaseRepository<T extends Document> implements IBaseReposit
     update: UpdateQuery<T>,
     options?: QueryOptions<T>
   ): Promise<number> {
-    const result = await this.model.updateMany(filter, update, options).exec();
+    const result = await this.model.updateMany(filter, update, options as any).exec();
     return result.modifiedCount;
   }
 
