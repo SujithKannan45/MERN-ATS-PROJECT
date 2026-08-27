@@ -33,6 +33,12 @@ const envSchema = z.object({
 
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly']).default('debug'),
   LOG_DIR: z.string().default('logs'),
+
+  CLOUDINARY_CLOUD_NAME: z.string().default('ats_cloud_name'),
+  CLOUDINARY_API_KEY: z.string().default('ats_api_key'),
+  CLOUDINARY_API_SECRET: z.string().default('ats_api_secret'),
+  CLOUDINARY_FOLDER: z.string().default('ats_resumes'),
+  MAX_FILE_SIZE_MB: z.coerce.number().default(5),
 });
 
 const parseEnv = () => {
