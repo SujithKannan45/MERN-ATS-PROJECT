@@ -39,6 +39,9 @@ const envSchema = z.object({
   CLOUDINARY_API_SECRET: z.string().default('ats_api_secret'),
   CLOUDINARY_FOLDER: z.string().default('ats_resumes'),
   MAX_FILE_SIZE_MB: z.coerce.number().default(5),
+
+  GEMINI_API_KEY: z.string().default(''),
+  GEMINI_MODEL: z.string().default('gemini-1.5-flash'),
 });
 
 const parseEnv = () => {
