@@ -42,6 +42,15 @@ const envSchema = z.object({
 
   GEMINI_API_KEY: z.string().default(''),
   GEMINI_MODEL: z.string().default('gemini-1.5-flash'),
+
+  SMTP_HOST: z.string().default('smtp.ethereal.email'),
+  SMTP_PORT: z.coerce.number().default(587),
+  SMTP_SECURE: z.coerce.boolean().default(false),
+  SMTP_USER: z.string().default(''),
+  SMTP_PASS: z.string().default(''),
+  SMTP_FROM: z.string().default('AI ATS Platform <noreply@atsplatform.dev>'),
+  APP_NAME: z.string().default('AI-Powered ATS Resume Builder & Job Tracker'),
+  CLIENT_URL: z.string().default('http://localhost:5173'),
 });
 
 const parseEnv = () => {

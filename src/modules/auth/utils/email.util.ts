@@ -1,31 +1,56 @@
+import { emailQueue } from '../../../core/queue/email.queue.js';
 import { logger } from '../../../core/logger/logger.js';
-import { envConfig } from '../../../config/env.config.js';
 
 export class EmailUtil {
-  private static getClientBaseUrl(): string {
-    const origins = envConfig.ALLOWED_ORIGINS;
-    return origins[0] || 'http://localhost:5173';
-  }
-
-  public static async sendVerificationEmail(email: string, rawToken: string): Promise<void> {
-    const clientUrl = this.getClientBaseUrl();
-    const verificationUrl = `${clientUrl}/verify-email?token=${rawToken}`;
-
-    logger.info(`📧 [Email Service] Sending Verification Email to: ${email}`, {
-      recipient: email,
-      verificationUrl,
-      rawToken,
+  public static async sendVerificationEmail(
+    email: string,
+    rawToken: string,
+    name: string = 'Candidate'
+  ): Promise<void> {
+    logger.debug(`[Auth:EmailUtil] Enqueueing verification email to ${email}`);
+    emailQueue.enqueueEmail({
+      type: 'VERIFY_EMAIL',
+      to: email,
+      name,
+      token: rawToken,
     });
   }
 
-  public static async sendPasswordResetEmail(email: string, rawToken: string): Promise<void> {
-    const clientUrl = this.getClientBaseUrl();
-    const resetUrl = `${clientUrl}/reset-password?token=${rawToken}`;
+  public static async sendPasswordResetEmail(
+    email: string,
+    rawToken: string,
+    name: string = 'User'
+  ): Promise<void> {
+    logger.debug(`[Auth:EmailUtil] Enqueueing password reset email to ${email}`);
+    emailQueue.enqueueEmail({
+      type: 'FORGOT_PASSWORD',
+      to: email,
+      name,
+      token: rawToken,
+    });
+  }
 
-    logger.info(`📧 [Email Service] Sending Password Reset Email to: ${email}`, {
-      recipient: email,
-      resetUrl,
-      rawToken,
+  public static async sendWelcomeEmail(email: string, name: string = 'Candidate'): Promise<void> {
+    emailQueue.enqueueEmail({
+      type: 'WELCOME',
+      to: email,
+      name,
+    });
+  }
+
+  public static async sendPasswordResetSuccessEmail(email: string, name: string = 'User'): Promise<void> {
+    emailQueue.enqueueEmail({
+      type: 'PASSWORD_RESET_SUCCESS',
+      to: email,
+      name,
+    });
+  }
+
+  public static async sendPasswordChangedEmail(email: string, name: string = 'User'): Promise<void> {
+    emailQueue.enqueueEmail({
+      type: 'PASSWORD_CHANGED',
+      to: email,
+      name,
     });
   }
 }

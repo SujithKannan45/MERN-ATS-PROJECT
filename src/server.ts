@@ -3,6 +3,9 @@ import { createApp } from './app.js';
 import { envConfig } from './config/env.config.js';
 import { dbConnection } from './config/db.config.js';
 import { logger } from './core/logger/logger.js';
+import { cronScheduler } from './core/schedulers/cron.scheduler.js';
+import { emailQueue } from './core/queue/email.queue.js';
+import { notificationQueue } from './core/queue/notification.queue.js';
 
 // Catch Uncaught Synchronous Exceptions early
 process.on('uncaughtException', (error: Error) => {
@@ -19,18 +22,21 @@ async function bootstrap() {
     logger.info('Connecting to MongoDB database...');
     await dbConnection.connect();
 
-    // 2. Initialize Express Application
+    // 2. Initialize Background Cron Scheduler
+    cronScheduler.init();
+
+    // 3. Initialize Express Application
     const app = createApp();
     const server = http.createServer(app);
 
-    // 3. Start HTTP Server
+    // 4. Start HTTP Server
     server.listen(envConfig.PORT, () => {
       logger.info(`🚀 Server running in [${envConfig.NODE_ENV}] mode on port ${envConfig.PORT}`);
       logger.info(`📡 API Base URL: http://localhost:${envConfig.PORT}${envConfig.API_PREFIX}`);
       logger.info(`🩺 Health Check: http://localhost:${envConfig.PORT}/health`);
     });
 
-    // 4. Graceful Shutdown Management
+    // 5. Graceful Shutdown Management
     const shutdown = async (signal: string) => {
       logger.warn(`🛑 Received ${signal}. Starting graceful shutdown...`);
 
@@ -39,6 +45,19 @@ async function bootstrap() {
         logger.error('⚠️ Graceful shutdown timed out. Forcing process exit.');
         process.exit(1);
       }, 10000);
+
+      try {
+        // Stop scheduled cron tasks
+        cronScheduler.stopAll();
+
+        // Drain active queue jobs
+        await Promise.allSettled([
+          emailQueue.queue.shutdown(3000),
+          notificationQueue.queue.shutdown(3000),
+        ]);
+      } catch (queueErr) {
+        logger.warn('Warning during background queue shutdown:', { queueErr });
+      }
 
       // Stop accepting incoming HTTP connections
       server.close(async () => {
