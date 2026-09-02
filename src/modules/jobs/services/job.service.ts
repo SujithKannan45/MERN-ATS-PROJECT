@@ -15,6 +15,7 @@ import {
 import { PaginatedResult } from '../../../shared/repositories/base.repository.interface.js';
 import { BadRequestError, NotFoundError } from '../../../core/errors/app-error.js';
 import { logger } from '../../../core/logger/logger.js';
+import { Notification, NotificationType } from '../../notifications/models/notification.model.js';
 
 export class JobService implements IJobService {
   private readonly jobRepository: IJobRepository;
@@ -94,6 +95,15 @@ export class JobService implements IJobService {
       title: job.jobTitle,
     });
 
+    // Asynchronously trigger notification
+    void Notification.create({
+      userId: new Types.ObjectId(userId),
+      title: 'Job Opening Added',
+      message: `Added "${job.jobTitle}" at "${job.companyName}" to your application tracker.`,
+      type: 'JOB_ADDED',
+      data: { jobId: job._id.toString() },
+    });
+
     return this.mapJobResponse(job);
   }
 
@@ -120,8 +130,10 @@ export class JobService implements IJobService {
     if (dto.notes !== undefined) job.notes = dto.notes.trim();
 
     // Handle status transitions and automatic dates
+    let statusChanged = false;
     if (dto.status !== undefined && dto.status !== job.status) {
       job.status = dto.status;
+      statusChanged = true;
       if (dto.status === 'Applied' && !job.appliedDate && !dto.appliedDate) {
         job.appliedDate = new Date();
       }
@@ -154,6 +166,20 @@ export class JobService implements IJobService {
     }
 
     await job.save();
+
+    if (statusChanged) {
+      let notifType: NotificationType = 'APPLICATION_STATUS_CHANGED';
+      if (job.status === 'Interview Scheduled') notifType = 'INTERVIEW_SCHEDULED';
+      else if (job.status === 'Offer Received') notifType = 'OFFER_RECEIVED';
+
+      void Notification.create({
+        userId: new Types.ObjectId(userId),
+        title: `Application Status: ${job.status}`,
+        message: `Your application for "${job.jobTitle}" at "${job.companyName}" moved to "${job.status}".`,
+        type: notifType,
+        data: { jobId: job._id.toString(), status: job.status },
+      });
+    }
 
     logger.info(`Job opening updated for user: ${userId}`, { jobId: job._id });
 

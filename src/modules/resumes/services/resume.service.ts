@@ -17,6 +17,7 @@ import {
   NotFoundError,
 } from '../../../core/errors/app-error.js';
 import { logger } from '../../../core/logger/logger.js';
+import { Notification } from '../../notifications/models/notification.model.js';
 
 export class ResumeService implements IResumeService {
   private readonly resumeRepository: IResumeRepository;
@@ -108,6 +109,15 @@ export class ResumeService implements IResumeService {
         fileType,
       });
 
+      // Asynchronously trigger notification
+      void Notification.create({
+        userId: new Types.ObjectId(userId),
+        title: 'Resume Uploaded Successfully',
+        message: `Your resume "${file.originalname}" has been uploaded, parsed, and is ready for ATS analysis.`,
+        type: 'RESUME_UPLOADED',
+        data: { resumeId: resume._id.toString() },
+      });
+
       return this.mapResumeResponse(resume);
     } catch (error) {
       // Rollback Cloudinary asset if DB write fails
@@ -180,6 +190,15 @@ export class ResumeService implements IResumeService {
       logger.info(`Resume replaced/updated for user: ${userId}`, {
         resumeId: existingResume._id,
         version: newVersion,
+      });
+
+      // Asynchronously trigger notification
+      void Notification.create({
+        userId: new Types.ObjectId(userId),
+        title: 'Resume Updated',
+        message: `Your resume "${existingResume.fileName}" has been updated to version ${newVersion}.`,
+        type: 'RESUME_UPLOADED',
+        data: { resumeId: existingResume._id.toString(), version: newVersion },
       });
 
       return this.mapResumeResponse(existingResume);

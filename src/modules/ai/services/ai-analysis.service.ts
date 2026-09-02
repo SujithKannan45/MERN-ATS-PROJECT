@@ -14,6 +14,7 @@ import {
 } from '../../../shared/repositories/base.repository.interface.js';
 import { BadRequestError, NotFoundError } from '../../../core/errors/app-error.js';
 import { logger } from '../../../core/logger/logger.js';
+import { Notification } from '../../notifications/models/notification.model.js';
 
 export class AiAnalysisService implements IAiAnalysisService {
   private readonly historyRepository: IAnalysisHistoryRepository;
@@ -103,6 +104,18 @@ export class AiAnalysisService implements IAiAnalysisService {
       reportId: historyDoc._id,
       overallScore: analysisResult.atsScore.overallScore,
       matchPercentage: analysisResult.jobMatch.matchPercentage,
+    });
+
+    // Asynchronously trigger notifications
+    void Notification.create({
+      userId: new Types.ObjectId(userId),
+      title: 'Resume Analysis Completed',
+      message: `Your resume ATS analysis scored ${analysisResult.atsScore.overallScore}/100. Actionable improvement suggestions are now available.`,
+      type: 'RESUME_ANALYZED',
+      data: {
+        reportId: historyDoc._id.toString(),
+        score: analysisResult.atsScore.overallScore,
+      },
     });
 
     return this.mapHistoryResponse(historyDoc);
