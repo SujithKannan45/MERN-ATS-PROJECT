@@ -18,6 +18,7 @@ import {
 } from '../../../core/errors/app-error.js';
 import { logger } from '../../../core/logger/logger.js';
 import { Notification } from '../../notifications/models/notification.model.js';
+import { AuditHelper } from '../../../core/audit/audit.helper.js';
 
 export class ResumeService implements IResumeService {
   private readonly resumeRepository: IResumeRepository;
@@ -118,6 +119,15 @@ export class ResumeService implements IResumeService {
         data: { resumeId: resume._id.toString() },
       });
 
+      // Record audit log
+      AuditHelper.log({
+        userId,
+        action: 'RESUME_UPLOAD',
+        resource: 'Resume',
+        resourceId: resume._id.toString(),
+        details: { fileName: file.originalname, fileSize: file.size, fileType },
+      });
+
       return this.mapResumeResponse(resume);
     } catch (error) {
       // Rollback Cloudinary asset if DB write fails
@@ -201,6 +211,15 @@ export class ResumeService implements IResumeService {
         data: { resumeId: existingResume._id.toString(), version: newVersion },
       });
 
+      // Record audit log
+      AuditHelper.log({
+        userId,
+        action: 'RESUME_UPDATE',
+        resource: 'Resume',
+        resourceId: existingResume._id.toString(),
+        details: { version: newVersion, fileName: file.originalname },
+      });
+
       return this.mapResumeResponse(existingResume);
     } catch (error) {
       // Rollback newly uploaded Cloudinary asset if DB update fails
@@ -216,6 +235,7 @@ export class ResumeService implements IResumeService {
     }
 
     const publicId = resume.cloudinaryPublicId;
+    const resumeId = resume._id.toString();
 
     // Delete from MongoDB
     await this.resumeRepository.deleteByUserId(userId);
@@ -225,7 +245,15 @@ export class ResumeService implements IResumeService {
       void CloudinaryUtil.deleteResumeFile(publicId);
     }
 
-    logger.info(`Resume deleted for user: ${userId}`, { resumeId: resume._id });
+    logger.info(`Resume deleted for user: ${userId}`, { resumeId });
+
+    // Record audit log
+    AuditHelper.log({
+      userId,
+      action: 'RESUME_DELETE',
+      resource: 'Resume',
+      resourceId: resumeId,
+    });
 
     return { message: 'Resume document deleted successfully from your profile.' };
   }

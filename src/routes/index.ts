@@ -6,18 +6,25 @@ import { aiRoutes } from '../modules/ai/routes/ai.routes.js';
 import { jobRoutes } from '../modules/jobs/routes/job.routes.js';
 import { analyticsRoutes } from '../modules/analytics/routes/analytics.routes.js';
 import { notificationRoutes } from '../modules/notifications/routes/notification.routes.js';
+import { auditLogRoutes } from '../modules/audit/routes/audit-log.routes.js';
+import {
+  authRateLimiter,
+  aiRateLimiter,
+  uploadRateLimiter,
+} from '../core/middlewares/rate-limiter.middleware.js';
 import { NotFoundError } from '../core/errors/app-error.js';
 
 const router = Router();
 
-// Register Module Sub-routers
+// Register Module Sub-routers with appropriate rate limiters
 router.use('/health', healthRoutes);
-router.use('/auth', authRoutes);
-router.use('/resumes', resumeRoutes);
-router.use('/ai', aiRoutes);
+router.use('/auth', authRateLimiter, authRoutes);
+router.use('/resumes', uploadRateLimiter, resumeRoutes);
+router.use('/ai', aiRateLimiter, aiRoutes);
 router.use('/jobs', jobRoutes);
 router.use('/dashboard', analyticsRoutes);
 router.use('/notifications', notificationRoutes);
+router.use('/audit-logs', auditLogRoutes);
 
 // Catch-all for undefined API routes under /api/v1
 router.all('*', (req, _res, next) => {
@@ -25,4 +32,3 @@ router.all('*', (req, _res, next) => {
 });
 
 export const apiRouter = router;
-

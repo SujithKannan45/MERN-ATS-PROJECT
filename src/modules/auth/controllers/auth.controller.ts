@@ -3,6 +3,7 @@ import { IAuthService } from '../services/auth.service.interface.js';
 import { TokenUtil } from '../utils/token.util.js';
 import { ApiResponse } from '../../../shared/utils/api-response.js';
 import { UnauthorizedError } from '../../../core/errors/app-error.js';
+import { AuditHelper } from '../../../core/audit/audit.helper.js';
 
 export class AuthController {
   private readonly authService: IAuthService;
@@ -15,6 +16,16 @@ export class AuthController {
     const result = await this.authService.register(req.body);
     TokenUtil.setAuthCookies(res, result.accessToken, result.refreshToken);
 
+    AuditHelper.log({
+      req,
+      userId: result.user._id,
+      action: 'AUTH_REGISTER',
+      resource: 'User',
+      resourceId: result.user._id,
+      status: 'SUCCESS',
+      details: { email: result.user.email, role: result.user.role },
+    });
+
     return ApiResponse.created(
       res,
       {
@@ -26,17 +37,38 @@ export class AuthController {
   };
 
   public login = async (req: Request, res: Response): Promise<Response> => {
-    const result = await this.authService.login(req.body);
-    TokenUtil.setAuthCookies(res, result.accessToken, result.refreshToken);
+    try {
+      const result = await this.authService.login(req.body);
+      TokenUtil.setAuthCookies(res, result.accessToken, result.refreshToken);
 
-    return ApiResponse.success(
-      res,
-      {
-        user: result.user,
-        accessToken: result.accessToken,
-      },
-      'Login successful'
-    );
+      AuditHelper.log({
+        req,
+        userId: result.user._id,
+        action: 'AUTH_LOGIN',
+        resource: 'User',
+        resourceId: result.user._id,
+        status: 'SUCCESS',
+        details: { email: result.user.email },
+      });
+
+      return ApiResponse.success(
+        res,
+        {
+          user: result.user,
+          accessToken: result.accessToken,
+        },
+        'Login successful'
+      );
+    } catch (error) {
+      AuditHelper.log({
+        req,
+        action: 'AUTH_LOGIN_FAILED',
+        resource: 'User',
+        status: 'FAILURE',
+        details: { email: req.body?.email },
+      });
+      throw error;
+    }
   };
 
   public logout = async (req: Request, res: Response): Promise<Response> => {
@@ -45,6 +77,17 @@ export class AuthController {
 
     await this.authService.logout(userId, refreshToken);
     TokenUtil.clearAuthCookies(res);
+
+    if (userId) {
+      AuditHelper.log({
+        req,
+        userId,
+        action: 'AUTH_LOGOUT',
+        resource: 'User',
+        resourceId: userId,
+        status: 'SUCCESS',
+      });
+    }
 
     return ApiResponse.success(res, null, 'Logged out successfully');
   };
@@ -74,6 +117,14 @@ export class AuthController {
   public resetPassword = async (req: Request, res: Response): Promise<Response> => {
     const result = await this.authService.resetPassword(req.body);
     TokenUtil.clearAuthCookies(res);
+
+    AuditHelper.log({
+      req,
+      action: 'AUTH_PASSWORD_RESET',
+      resource: 'User',
+      status: 'SUCCESS',
+    });
+
     return ApiResponse.success(res, null, result.message);
   };
 
@@ -81,6 +132,16 @@ export class AuthController {
     const userId = req.user!.userId;
     const result = await this.authService.changePassword(userId, req.body);
     TokenUtil.clearAuthCookies(res);
+
+    AuditHelper.log({
+      req,
+      userId,
+      action: 'AUTH_PASSWORD_CHANGE',
+      resource: 'User',
+      resourceId: userId,
+      status: 'SUCCESS',
+    });
+
     return ApiResponse.success(res, null, result.message);
   };
 

@@ -16,6 +16,7 @@ import { PaginatedResult } from '../../../shared/repositories/base.repository.in
 import { BadRequestError, NotFoundError } from '../../../core/errors/app-error.js';
 import { logger } from '../../../core/logger/logger.js';
 import { Notification, NotificationType } from '../../notifications/models/notification.model.js';
+import { AuditHelper } from '../../../core/audit/audit.helper.js';
 
 export class JobService implements IJobService {
   private readonly jobRepository: IJobRepository;
@@ -104,6 +105,15 @@ export class JobService implements IJobService {
       data: { jobId: job._id.toString() },
     });
 
+    // Record audit log
+    AuditHelper.log({
+      userId,
+      action: 'JOB_CREATE',
+      resource: 'Job',
+      resourceId: job._id.toString(),
+      details: { companyName: job.companyName, jobTitle: job.jobTitle, status: job.status },
+    });
+
     return this.mapJobResponse(job);
   }
 
@@ -183,6 +193,15 @@ export class JobService implements IJobService {
 
     logger.info(`Job opening updated for user: ${userId}`, { jobId: job._id });
 
+    // Record audit log
+    AuditHelper.log({
+      userId,
+      action: statusChanged ? 'JOB_STATUS_CHANGE' : 'JOB_UPDATE',
+      resource: 'Job',
+      resourceId: job._id.toString(),
+      details: { companyName: job.companyName, jobTitle: job.jobTitle, status: job.status },
+    });
+
     return this.mapJobResponse(job);
   }
 
@@ -193,6 +212,14 @@ export class JobService implements IJobService {
     }
 
     logger.info(`Job opening deleted for user: ${userId}`, { jobId: id });
+
+    // Record audit log
+    AuditHelper.log({
+      userId,
+      action: 'JOB_DELETE',
+      resource: 'Job',
+      resourceId: id,
+    });
 
     return { message: 'Job opening deleted successfully.' };
   }
@@ -260,6 +287,19 @@ export class JobService implements IJobService {
 
     logger.info(`AI Job Match calculated for job ${jobId} and user ${userId}`, {
       matchPercentage: matchResult.overallMatchPercentage,
+    });
+
+    // Record audit log
+    AuditHelper.log({
+      userId,
+      action: 'AI_JOB_MATCH',
+      resource: 'Job',
+      resourceId: jobId,
+      details: {
+        companyName: job.companyName,
+        jobTitle: job.jobTitle,
+        matchPercentage: matchResult.overallMatchPercentage,
+      },
     });
 
     return {

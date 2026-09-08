@@ -15,6 +15,7 @@ import {
 import { BadRequestError, NotFoundError } from '../../../core/errors/app-error.js';
 import { logger } from '../../../core/logger/logger.js';
 import { Notification } from '../../notifications/models/notification.model.js';
+import { AuditHelper } from '../../../core/audit/audit.helper.js';
 
 export class AiAnalysisService implements IAiAnalysisService {
   private readonly historyRepository: IAnalysisHistoryRepository;
@@ -115,6 +116,19 @@ export class AiAnalysisService implements IAiAnalysisService {
       data: {
         reportId: historyDoc._id.toString(),
         score: analysisResult.atsScore.overallScore,
+      },
+    });
+
+    // Record audit log
+    AuditHelper.log({
+      userId,
+      action: 'AI_RESUME_ANALYSIS',
+      resource: 'AnalysisHistory',
+      resourceId: historyDoc._id.toString(),
+      details: {
+        targetJobTitle: dto.targetJobTitle,
+        overallScore: analysisResult.atsScore.overallScore,
+        matchPercentage: analysisResult.jobMatch.matchPercentage,
       },
     });
 

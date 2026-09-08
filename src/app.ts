@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import { envConfig } from './config/env.config.js';
 import { configureSecurityMiddlewares } from './core/middlewares/security.middleware.js';
 import { morganMiddleware } from './core/middlewares/morgan.middleware.js';
+import { requestTimer } from './core/middlewares/request-timer.middleware.js';
 import { globalRateLimiter } from './core/middlewares/rate-limiter.middleware.js';
 import { globalErrorHandler } from './core/errors/error.middleware.js';
 import { NotFoundError } from './core/errors/app-error.js';
@@ -16,13 +17,16 @@ export const createApp = (): Express => {
   // Enable trust proxy for AWS ALB / CloudFront / Nginx reverse proxies
   app.set('trust proxy', 1);
 
-  // 1. HTTP Request Logging (Morgan + Winston)
+  // 1. High-resolution Request Duration & Slow Request Tracker
+  app.use(requestTimer);
+
+  // 2. HTTP Request Logging (Morgan + Winston)
   app.use(morganMiddleware);
 
-  // 2. Security Middlewares (Helmet, CORS, Mongo Sanitize, HPP)
+  // 3. Security Middlewares (Hardened Helmet, CSP, CORS, NoSQL injection, XSS clean, HPP)
   configureSecurityMiddlewares(app);
 
-  // 3. Performance Compression (Gzip / Deflate)
+  // 4. Performance Compression (Gzip / Deflate)
   app.use(
     compression({
       filter: (req, res) => {
@@ -34,26 +38,26 @@ export const createApp = (): Express => {
     })
   );
 
-  // 4. Request Body Parsers & Cookie Parser
-  app.use(express.json({ limit: '10mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+  // 5. Request Body Parsers with Strict Size Limits (1MB default to prevent payload DoS)
+  app.use(express.json({ limit: '1mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '1mb' }));
   app.use(cookieParser(envConfig.COOKIE_SECRET));
 
-  // 5. Global Rate Limiter
+  // 6. Global Rate Limiter
   app.use(globalRateLimiter);
 
-  // 6. Direct Root Health Check (Commonly polled by AWS ALB & Kubernetes Liveness Probes)
+  // 7. Direct Root Health Check (Polled by AWS ALB & Kubernetes Liveness Probes)
   app.use('/health', healthRoutes);
 
-  // 7. Versioned API Routes (/api/v1)
+  // 8. Versioned API Routes (/api/v1)
   app.use(envConfig.API_PREFIX, apiRouter);
 
-  // 8. 404 Handler for Unhandled Routes
+  // 9. 404 Handler for Unhandled Routes
   app.use('*', (req, _res, next) => {
     next(new NotFoundError(`Resource not found on this server: [${req.method}] ${req.originalUrl}`));
   });
 
-  // 9. Global Centralized Error Handling Middleware
+  // 10. Global Centralized Error Handling Middleware
   app.use(globalErrorHandler);
 
   return app;
