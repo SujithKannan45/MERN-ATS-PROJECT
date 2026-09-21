@@ -9,6 +9,7 @@ import { globalRateLimiter } from './core/middlewares/rate-limiter.middleware.js
 import { globalErrorHandler } from './core/errors/error.middleware.js';
 import { NotFoundError } from './core/errors/app-error.js';
 import { healthRoutes } from './modules/health/health.routes.js';
+import { swaggerRoutes } from './docs/swagger.routes.js';
 import { apiRouter } from './routes/index.js';
 
 export const createApp = (): Express => {
@@ -46,10 +47,13 @@ export const createApp = (): Express => {
   // 6. Global Rate Limiter
   app.use(globalRateLimiter);
 
-  // 7. Direct Root Health Check (Polled by AWS ALB & Kubernetes Liveness Probes)
+  // 7. Interactive API Documentation (Swagger UI)
+  app.use('/api-docs', swaggerRoutes);
+
+  // 8. Direct Root Health Check (Polled by AWS ALB & Kubernetes Liveness Probes)
   app.use('/health', healthRoutes);
 
-  // 8. Versioned API Routes (/api/v1)
+  // 9. Versioned API Routes (/api/v1)
   app.use(envConfig.API_PREFIX, apiRouter);
 
   // 9. 404 Handler for Unhandled Routes

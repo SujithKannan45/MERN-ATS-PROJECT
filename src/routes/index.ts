@@ -7,6 +7,7 @@ import { jobRoutes } from '../modules/jobs/routes/job.routes.js';
 import { analyticsRoutes } from '../modules/analytics/routes/analytics.routes.js';
 import { notificationRoutes } from '../modules/notifications/routes/notification.routes.js';
 import { auditLogRoutes } from '../modules/audit/routes/audit-log.routes.js';
+import { swaggerRoutes } from '../docs/swagger.routes.js';
 import {
   authRateLimiter,
   aiRateLimiter,
@@ -18,6 +19,7 @@ const router = Router();
 
 // Register Module Sub-routers with appropriate rate limiters
 router.use('/health', healthRoutes);
+router.use('/docs', swaggerRoutes);
 router.use('/auth', authRateLimiter, authRoutes);
 router.use('/resumes', uploadRateLimiter, resumeRoutes);
 router.use('/ai', aiRateLimiter, aiRoutes);

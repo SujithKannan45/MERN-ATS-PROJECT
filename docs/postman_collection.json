@@ -1,0 +1,348 @@
+{
+  "info": {
+    "_postman_id": "783e92bb-b409-4b70-be36-ffca4daf80db",
+    "name": "AI-Powered ATS Resume Builder & Job Tracker API",
+    "description": "Production Postman collection for all 40+ endpoints of the AI-Powered ATS Resume Builder and Job Tracking Platform.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Root Health Check",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:5000/health"
+          }
+        },
+        {
+          "name": "API v1 Health Check",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register Candidate",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Alex Morgan\",\n  \"email\": \"alex@example.com\",\n  \"password\": \"StrongP@ssw0rd!\",\n  \"role\": \"candidate\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alex@example.com\",\n  \"password\": \"StrongP@ssw0rd!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Refresh Access Token",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/refresh-token"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/logout"
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/forgot-password",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alex@example.com\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/reset-password",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"<reset_token>\",\n  \"newPassword\": \"NewStrongP@ssw0rd!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/change-password",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"StrongP@ssw0rd!\",\n  \"newPassword\": \"NewStrongP@ssw0rd!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Verify Email",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/verify-email",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"<verification_token>\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Resumes",
+      "item": [
+        {
+          "name": "Get Current Resume",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/resumes/me"
+          }
+        },
+        {
+          "name": "Get Resume Metadata",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/resumes/metadata"
+          }
+        },
+        {
+          "name": "Download Resume Asset",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/resumes/download"
+          }
+        },
+        {
+          "name": "Delete Resume",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/resumes/delete"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AI Resume Analysis",
+      "item": [
+        {
+          "name": "Analyze Resume with Gemini",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/ai/analyze",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targetJobTitle\": \"Senior Backend Engineer\",\n  \"jobDescription\": \"Looking for expertise in Node.js, Express, TypeScript, and MongoDB.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Analysis History",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/ai/history?page=1&limit=10"
+          }
+        },
+        {
+          "name": "Get Single Analysis Report",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/ai/history/:id"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Job Tracking",
+      "item": [
+        {
+          "name": "Create Job",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/jobs",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyName\": \"Google\",\n  \"jobTitle\": \"Software Engineer III\",\n  \"employmentType\": \"Full-time\",\n  \"workplaceType\": \"Remote\",\n  \"status\": \"Saved\",\n  \"priority\": \"High\",\n  \"requiredSkills\": [\"TypeScript\", \"Node.js\", \"System Design\"]\n}"
+            }
+          }
+        },
+        {
+          "name": "Get All Jobs (Filtered)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/jobs?page=1&limit=10&status=Saved"
+          }
+        },
+        {
+          "name": "Get Job Dashboard Metrics",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/jobs/dashboard"
+          }
+        },
+        {
+          "name": "Get Job Details",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/jobs/:id"
+          }
+        },
+        {
+          "name": "Update Job",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/jobs/:id",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Applied\",\n  \"notes\": \"Submitted via company career portal.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Match Job with AI",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/jobs/:id/match"
+          }
+        },
+        {
+          "name": "Delete Job",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/jobs/:id"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analytics & Dashboard",
+      "item": [
+        {
+          "name": "Get Overview Analytics",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/dashboard"
+          }
+        },
+        {
+          "name": "Get Frontend Charts Datasets",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/dashboard/charts"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "List Notifications",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/notifications?page=1&limit=20"
+          }
+        },
+        {
+          "name": "Get Unread Count",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/notifications/unread-count"
+          }
+        },
+        {
+          "name": "Mark All Read",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/notifications/read-all"
+          }
+        },
+        {
+          "name": "Mark Single Read",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/notifications/:id/read"
+          }
+        },
+        {
+          "name": "Delete Notification",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/notifications/:id"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Audit Logs",
+      "item": [
+        {
+          "name": "Get My Activity Logs",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/audit-logs/me?page=1&limit=20"
+          }
+        },
+        {
+          "name": "Get System Audit Logs (Admin)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/audit-logs?page=1&limit=20"
+          }
+        }
+      ]
+    }
+  ]
+}
