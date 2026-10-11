@@ -3,6 +3,7 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   FileText,
+  PenTool,
   Sparkles,
   Briefcase,
   BarChart3,
@@ -39,6 +40,11 @@ const navItems: NavItem[] = [
     title: 'My Resumes',
     href: '/resumes',
     icon: <FileText className="h-5 w-5" />,
+  },
+  {
+    title: 'Resume Builder',
+    href: '/resume-builder',
+    icon: <PenTool className="h-5 w-5" />,
   },
   {
     title: 'AI Analysis',

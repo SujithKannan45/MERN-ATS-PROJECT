@@ -26,10 +26,13 @@ const DashboardPage = React.lazy(() =>
   import('@/pages/DashboardPage').then((m) => ({ default: m.DashboardPage }))
 );
 const ResumesPage = React.lazy(() =>
-  import('@/pages/FeaturePages').then((m) => ({ default: m.ResumesPage }))
+  import('@/pages/ResumesPage').then((m) => ({ default: m.ResumesPage }))
+);
+const ResumeBuilderPage = React.lazy(() =>
+  import('@/pages/ResumeBuilderPage').then((m) => ({ default: m.ResumeBuilderPage }))
 );
 const AIAnalysisPage = React.lazy(() =>
-  import('@/pages/FeaturePages').then((m) => ({ default: m.AIAnalysisPage }))
+  import('@/pages/AIAnalysisPage').then((m) => ({ default: m.AIAnalysisPage }))
 );
 const JobsPage = React.lazy(() =>
   import('@/pages/FeaturePages').then((m) => ({ default: m.JobsPage }))
@@ -133,6 +136,14 @@ const router = createBrowserRouter([
             element: (
               <React.Suspense fallback={<SuspenseFallback />}>
                 <ResumesPage />
+              </React.Suspense>
+            ),
+          },
+          {
+            path: 'resume-builder',
+            element: (
+              <React.Suspense fallback={<SuspenseFallback />}>
+                <ResumeBuilderPage />
               </React.Suspense>
             ),
           },
