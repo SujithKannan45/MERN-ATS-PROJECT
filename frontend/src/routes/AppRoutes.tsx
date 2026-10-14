@@ -35,13 +35,13 @@ const AIAnalysisPage = React.lazy(() =>
   import('@/pages/AIAnalysisPage').then((m) => ({ default: m.AIAnalysisPage }))
 );
 const JobsPage = React.lazy(() =>
-  import('@/pages/FeaturePages').then((m) => ({ default: m.JobsPage }))
+  import('@/pages/JobsPage').then((m) => ({ default: m.JobsPage }))
 );
 const AnalyticsPage = React.lazy(() =>
-  import('@/pages/FeaturePages').then((m) => ({ default: m.AnalyticsPage }))
+  import('@/pages/AnalyticsPage').then((m) => ({ default: m.AnalyticsPage }))
 );
 const NotificationsPage = React.lazy(() =>
-  import('@/pages/FeaturePages').then((m) => ({ default: m.NotificationsPage }))
+  import('@/pages/NotificationsPage').then((m) => ({ default: m.NotificationsPage }))
 );
 const ProfilePage = React.lazy(() =>
   import('@/pages/FeaturePages').then((m) => ({ default: m.ProfilePage }))

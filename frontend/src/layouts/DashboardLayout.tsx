@@ -19,6 +19,8 @@ import {
 import { cn } from '@/utils/cn';
 import { useAuthStore } from '@/stores/auth.store';
 import { useUIStore } from '@/stores/ui.store';
+import { useQuery } from '@tanstack/react-query';
+import { notificationService } from '@/services/notification.service';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { Dropdown } from '@/components/ui/Dropdown';
 import { Button } from '@/components/ui/Button';
@@ -30,54 +32,7 @@ interface NavItem {
   badge?: string | number;
 }
 
-const navItems: NavItem[] = [
-  {
-    title: 'Dashboard',
-    href: '/dashboard',
-    icon: <LayoutDashboard className="h-5 w-5" />,
-  },
-  {
-    title: 'My Resumes',
-    href: '/resumes',
-    icon: <FileText className="h-5 w-5" />,
-  },
-  {
-    title: 'Resume Builder',
-    href: '/resume-builder',
-    icon: <PenTool className="h-5 w-5" />,
-  },
-  {
-    title: 'AI Analysis',
-    href: '/ai-analysis',
-    icon: <Sparkles className="h-5 w-5 text-indigo-400" />,
-  },
-  {
-    title: 'Job Tracker',
-    href: '/jobs',
-    icon: <Briefcase className="h-5 w-5" />,
-  },
-  {
-    title: 'Analytics',
-    href: '/analytics',
-    icon: <BarChart3 className="h-5 w-5" />,
-  },
-  {
-    title: 'Notifications',
-    href: '/notifications',
-    icon: <Bell className="h-5 w-5" />,
-    badge: 2,
-  },
-  {
-    title: 'Profile',
-    href: '/profile',
-    icon: <User className="h-5 w-5" />,
-  },
-  {
-    title: 'Settings',
-    href: '/settings',
-    icon: <Settings className="h-5 w-5" />,
-  },
-];
+
 
 export function DashboardLayout() {
   const location = useLocation();
@@ -89,6 +44,64 @@ export function DashboardLayout() {
     mobileMenuOpen,
     setMobileMenuOpen,
   } = useUIStore();
+
+  const { data: unreadCount = 0 } = useQuery({
+    queryKey: ['notifications-unread-count'],
+    queryFn: () => notificationService.getUnreadCount(),
+    refetchInterval: 30000,
+  });
+
+  const dynamicNavItems: NavItem[] = React.useMemo(
+    () => [
+      {
+        title: 'Dashboard',
+        href: '/dashboard',
+        icon: <LayoutDashboard className="h-5 w-5" />,
+      },
+      {
+        title: 'My Resumes',
+        href: '/resumes',
+        icon: <FileText className="h-5 w-5" />,
+      },
+      {
+        title: 'Resume Builder',
+        href: '/resume-builder',
+        icon: <PenTool className="h-5 w-5" />,
+      },
+      {
+        title: 'AI Analysis',
+        href: '/ai-analysis',
+        icon: <Sparkles className="h-5 w-5 text-indigo-400" />,
+      },
+      {
+        title: 'Job Tracker',
+        href: '/jobs',
+        icon: <Briefcase className="h-5 w-5" />,
+      },
+      {
+        title: 'Analytics',
+        href: '/analytics',
+        icon: <BarChart3 className="h-5 w-5" />,
+      },
+      {
+        title: 'Notifications',
+        href: '/notifications',
+        icon: <Bell className="h-5 w-5" />,
+        badge: unreadCount > 0 ? unreadCount : undefined,
+      },
+      {
+        title: 'Profile',
+        href: '/profile',
+        icon: <User className="h-5 w-5" />,
+      },
+      {
+        title: 'Settings',
+        href: '/settings',
+        icon: <Settings className="h-5 w-5" />,
+      },
+    ],
+    [unreadCount]
+  );
 
   const handleLogout = () => {
     logout();
@@ -153,7 +166,7 @@ export function DashboardLayout() {
 
         {/* Navigation Items */}
         <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-          {navItems.map((item) => {
+          {dynamicNavItems.map((item) => {
             const isActive = location.pathname === item.href;
             return (
               <Link
@@ -235,7 +248,12 @@ export function DashboardLayout() {
             <Link to="/notifications">
               <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
                 <Bell className="h-5 w-5" />
-                <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                  </span>
+                )}
               </Button>
             </Link>
 
@@ -284,7 +302,7 @@ export function DashboardLayout() {
             </div>
 
             <div className="flex-1 overflow-y-auto py-4 space-y-1">
-              {navItems.map((item) => {
+              {dynamicNavItems.map((item) => {
                 const isActive = location.pathname === item.href;
                 return (
                   <Link
@@ -299,7 +317,12 @@ export function DashboardLayout() {
                     )}
                   >
                     {item.icon}
-                    <span>{item.title}</span>
+                    <span className="flex-1">{item.title}</span>
+                    {item.badge !== undefined && (
+                      <span className="rounded-full bg-primary/20 text-primary px-2 py-0.5 text-xs font-bold">
+                        {item.badge}
+                      </span>
+                    )}
                   </Link>
                 );
               })}
