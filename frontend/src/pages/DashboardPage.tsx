@@ -209,7 +209,7 @@ export function DashboardPage() {
                 <div className="space-y-3">
                   {recentJobsData.jobs.map((job) => (
                     <div
-                      key={job._id}
+                      key={(job as any).id || job._id}
                       className="flex items-center justify-between p-3 rounded-lg border border-border bg-card/50 hover:bg-muted/30 transition-colors"
                     >
                       <div className="space-y-0.5">
@@ -392,7 +392,7 @@ export function DashboardPage() {
                 <div className="space-y-2">
                   {notifications.slice(0, 3).map((n) => (
                     <div
-                      key={n._id}
+                      key={(n as any).id || n._id}
                       className="p-2.5 rounded-lg border border-border/80 bg-background text-xs space-y-0.5"
                     >
                       <p className="font-semibold text-foreground truncate">{n.title}</p>

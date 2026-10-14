@@ -44,10 +44,10 @@ const NotificationsPage = React.lazy(() =>
   import('@/pages/NotificationsPage').then((m) => ({ default: m.NotificationsPage }))
 );
 const ProfilePage = React.lazy(() =>
-  import('@/pages/FeaturePages').then((m) => ({ default: m.ProfilePage }))
+  import('@/pages/ProfilePage').then((m) => ({ default: m.ProfilePage }))
 );
 const SettingsPage = React.lazy(() =>
-  import('@/pages/FeaturePages').then((m) => ({ default: m.SettingsPage }))
+  import('@/pages/SettingsPage').then((m) => ({ default: m.SettingsPage }))
 );
 const NotFoundPage = React.lazy(() =>
   import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage }))
